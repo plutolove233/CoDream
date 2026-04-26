@@ -33,3 +33,7 @@ go.work.sum
 .omc/
 .claude/
 .agents/
+node_modules/
+.DS_Store
+dist/
+build/
