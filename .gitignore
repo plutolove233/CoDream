@@ -33,3 +33,4 @@ go.work.sum
 .omc/
 .claude/
 .agents/
+.DS_Store
