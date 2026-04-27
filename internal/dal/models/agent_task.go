@@ -74,3 +74,13 @@ type AgentTask struct {
 func (AgentTask) TableName() string {
 	return "agent_tasks"
 }
+
+// GetID 返回 AgentTask 的 ID
+func (a AgentTask) GetID() uuid.UUID {
+	return a.ID
+}
+
+// SetID 设置 AgentTask 的 ID
+func (a *AgentTask) SetID(id uuid.UUID) {
+	a.ID = id
+}

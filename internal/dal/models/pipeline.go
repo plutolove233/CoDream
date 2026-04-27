@@ -79,3 +79,13 @@ type Pipeline struct {
 func (Pipeline) TableName() string {
 	return "pipelines"
 }
+
+// GetID 返回 Pipeline 的 ID
+func (p Pipeline) GetID() uuid.UUID {
+	return p.ID
+}
+
+// SetID 设置 Pipeline 的 ID
+func (p *Pipeline) SetID(id uuid.UUID) {
+	p.ID = id
+}

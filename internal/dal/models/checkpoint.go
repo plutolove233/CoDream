@@ -56,3 +56,13 @@ type Checkpoint struct {
 func (Checkpoint) TableName() string {
 	return "checkpoints"
 }
+
+// GetID 返回 Checkpoint 的 ID
+func (c Checkpoint) GetID() uuid.UUID {
+	return c.ID
+}
+
+// SetID 设置 Checkpoint 的 ID
+func (c *Checkpoint) SetID(id uuid.UUID) {
+	c.ID = id
+}

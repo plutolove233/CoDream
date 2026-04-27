@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/plutolove233/co-dream/internal/models"
+	"github.com/plutolove233/co-dream/internal/dal/models"
 	"gorm.io/gorm"
 )
 

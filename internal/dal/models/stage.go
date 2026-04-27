@@ -66,3 +66,13 @@ type StageExecution struct {
 func (StageExecution) TableName() string {
 	return "stage_executions"
 }
+
+// GetID 返回 StageExecution 的 ID
+func (s StageExecution) GetID() uuid.UUID {
+	return s.ID
+}
+
+// SetID 设置 StageExecution 的 ID
+func (s *StageExecution) SetID(id uuid.UUID) {
+	s.ID = id
+}

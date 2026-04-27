@@ -48,3 +48,13 @@ type PipelineExecution struct {
 func (PipelineExecution) TableName() string {
 	return "pipeline_executions"
 }
+
+// GetID 返回 PipelineExecution 的 ID
+func (e PipelineExecution) GetID() uuid.UUID {
+	return e.ID
+}
+
+// SetID 设置 PipelineExecution 的 ID
+func (e *PipelineExecution) SetID(id uuid.UUID) {
+	e.ID = id
+}
