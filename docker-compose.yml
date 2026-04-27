@@ -1,0 +1,78 @@
+services:
+  # ─────────────────────────────────────────────
+  # PostgreSQL — 主数据库
+  # 存储：Pipeline 定义、Stage 配置、Agent 执行记录、
+  #      Human-in-the-Loop 检查点等核心业务数据
+  # ─────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: codream_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-codream}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-codream_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-codream}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - codream_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-codream} -d ${POSTGRES_DB:-codream}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - codream_net
+
+  # ─────────────────────────────────────────────
+  # Redis — 缓存
+  # 存储：Pipeline 运行状态、Agent 任务队列、
+  #      会话缓存
+  # ─────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: codream_redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:-codream_redis_secret}
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --loglevel notice
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - codream_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-codream_redis_secret}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - codream_net
+
+# ─────────────────────────────────────────────
+# 网络
+# ─────────────────────────────────────────────
+networks:
+  codream_net:
+    name: codream_net
+    driver: bridge
+
+# ─────────────────────────────────────────────
+# 持久化卷
+# ─────────────────────────────────────────────
+volumes:
+  codream_postgres_data:
+    name: codream_postgres_data
+  codream_redis_data:
+    name: codream_redis_data
+  codream_pgadmin_data:
+    name: codream_pgadmin_data
+  codream_redis_insight_data:
+    name: codream_redis_insight_data
