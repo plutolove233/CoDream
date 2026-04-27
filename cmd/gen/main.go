@@ -2,26 +2,27 @@ package main
 
 import (
 	"context"
-	"log"
 
+	"github.com/joho/godotenv"
 	"github.com/plutolove233/co-dream/internal/database"
-	"github.com/plutolove233/co-dream/internal/dal/models"
 	"gorm.io/gen"
 )
 
 func main() {
+	godotenv.Load()
+	cfg := database.NewPostgreSqlConfig()
 	// 初始化数据库连接
-	ctx := context.Background()
-	config := database.NewConfig()
-	db, err := database.NewDatabase(ctx, config)
-	if err != nil {
-		log.Fatalf("failed to connect database: %v", err)
-	}
-	defer db.Close(ctx)
+	database.InitPostgreSqlDatabase(context.Background(), cfg)
+	db := database.GetPostgreSqlDatabase()
+	defer db.Close(context.Background())
 
-	// 配置代码生成器
+	// 创建生成器实例
 	g := gen.NewGenerator(gen.Config{
-		OutPath:           "internal/dal/gen",
+		// 输出目录
+		OutPath: "internal/dal/query",
+		// 模型目录
+		ModelPkgPath: "internal/dal/models",
+		// 生成模式
 		Mode:              gen.WithDefaultQuery | gen.WithQueryInterface,
 		FieldNullable:     true,
 		FieldCoverable:    true,
@@ -29,19 +30,11 @@ func main() {
 		FieldWithTypeTag:  true,
 	})
 
+	// 使用数据库连接
 	g.UseDB(db.DB())
 
-	// 从现有模型生成代码
-	g.ApplyBasic(
-		models.Pipeline{},
-		models.PipelineExecution{},
-		models.StageExecution{},
-		models.AgentTask{},
-		models.Checkpoint{},
-	)
+	g.ApplyBasic(g.GenerateAllTable()...)
 
-	// 执行代码生成
+	// 执行生成
 	g.Execute()
-
-	log.Println("Code generation completed successfully!")
 }

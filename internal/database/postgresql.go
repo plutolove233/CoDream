@@ -12,8 +12,8 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-// Config 包含数据库连接配置参数。
-type Config struct {
+// PostgresqlConfig 包含数据库连接配置参数。
+type PostgresqlConfig struct {
 	Host     string
 	Port     string
 	User     string
@@ -22,14 +22,18 @@ type Config struct {
 	SSLMode  string
 }
 
-// Database 封装了数据库连接实例。
-type Database struct {
+// PostgresqlDatabase 封装了数据库连接实例。
+type PostgresqlDatabase struct {
 	db *gorm.DB
 }
 
-// NewConfig 创建一个新的数据库配置实例，从环境变量读取配置值。
-func NewConfig() *Config {
-	return &Config{
+var (
+	PostgreSqlDB *PostgresqlDatabase
+)
+
+// NewPostgreSqlConfig 创建一个新的数据库配置实例，从环境变量读取配置值。
+func NewPostgreSqlConfig() *PostgresqlConfig {
+	return &PostgresqlConfig{
 		Host:     getEnv("POSTGRES_HOST", "localhost"),
 		Port:     getEnv("POSTGRES_PORT", "5432"),
 		User:     getEnv("POSTGRES_USER", "codream"),
@@ -40,7 +44,7 @@ func NewConfig() *Config {
 }
 
 // DSN 返回 PostgreSQL 数据源名称字符串。
-func (c *Config) DSN() string {
+func (c *PostgresqlConfig) DSN() string {
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		c.Host, c.Port, c.User, c.Password, c.DBName, c.SSLMode,
@@ -48,7 +52,7 @@ func (c *Config) DSN() string {
 }
 
 // NewDatabase 创建一个新的数据库连接实例。
-func NewDatabase(ctx context.Context, config *Config) (*Database, error) {
+func InitPostgreSqlDatabase(ctx context.Context, config *PostgresqlConfig) error {
 	gormConfig := &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 		NowFunc: func() time.Time {
@@ -58,12 +62,12 @@ func NewDatabase(ctx context.Context, config *Config) (*Database, error) {
 
 	db, err := gorm.Open(postgres.Open(config.DSN()), gormConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to database: %w", err)
+		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get database instance: %w", err)
+		return fmt.Errorf("failed to get database instance: %w", err)
 	}
 
 	sqlDB.SetMaxIdleConns(10)
@@ -72,20 +76,21 @@ func NewDatabase(ctx context.Context, config *Config) (*Database, error) {
 
 	// 使用 context 验证数据库连接
 	if err := sqlDB.PingContext(ctx); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
+		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
 	log.Println("Database connection established successfully")
-	return &Database{db: db}, nil
+	PostgreSqlDB = &PostgresqlDatabase{db: db}
+	return nil
 }
 
 // DB 返回底层的 gorm.DB 实例。
-func (d *Database) DB() *gorm.DB {
+func (d *PostgresqlDatabase) DB() *gorm.DB {
 	return d.db
 }
 
 // Close 关闭数据库连接。
-func (d *Database) Close(ctx context.Context) error {
+func (d *PostgresqlDatabase) Close(ctx context.Context) error {
 	sqlDB, err := d.db.DB()
 	if err != nil {
 		return fmt.Errorf("failed to get database instance: %w", err)
@@ -98,4 +103,8 @@ func getEnv(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+func GetPostgreSqlDatabase() *PostgresqlDatabase {
+	return PostgreSqlDB
 }
