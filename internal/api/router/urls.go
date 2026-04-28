@@ -7,5 +7,8 @@ import (
 
 func InitRouter(engine *gin.Engine) {
 	// 版本信息
-	engine.GET("/version", handler.GetVersion)
+	{
+		v1 := engine.Group("/api/v1")
+		v1.GET("/version", handler.GetVersion)
+	}
 }

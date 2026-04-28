@@ -2,27 +2,28 @@ package main
 
 import (
 	"context"
-	"os"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/plutolove233/co-dream/internal/api/router"
 	"github.com/plutolove233/co-dream/internal/database"
+	"github.com/plutolove233/co-dream/internal/setting"
+	"github.com/spf13/viper"
 )
 
 func main() {
-	godotenv.Load()
+	setting.InitViper()
+
 	ctx := context.Background()
 	database.InitPostgreSqlDatabase(ctx, database.NewPostgreSqlConfig())
 
-	gin.SetMode(os.Getenv("CODREAM_MODE"))
+	gin.SetMode(viper.GetString("system.Mode"))
 	engine := gin.Default()
 	// engine.Static("/static", "static")
 
 	// 初始化Session
-	store := cookie.NewStore([]byte(os.Getenv("CODREAM_SECRET")))
+	store := cookie.NewStore([]byte(viper.GetString("system.Secret")))
 	store.Options(sessions.Options{
 		MaxAge: 3600, // 设置Session过期时间为1小时
 	})
@@ -31,7 +32,7 @@ func main() {
 	// 初始化路由
 	router.InitRouter(engine)
 
-	err := engine.Run(os.Getenv("CODREAM_HOST") + ":" + os.Getenv("CODREAM_PORT"))
+	err := engine.Run(viper.GetString("system.SysIP") + ":" + viper.GetString("system.SysPort"))
 	if err != nil {
 		panic(err)
 	}
