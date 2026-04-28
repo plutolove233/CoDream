@@ -37,3 +37,4 @@ go.work.sum
 server
 .omx/
 *.pem
+SPEC.md
