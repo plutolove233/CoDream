@@ -48,9 +48,3 @@ redis:
   RedisHost: localhost
   RedisPassword: codream_redis_secret     # 生产环境请替换为强密码
   RedisPort: 6379
-
-# ── 豆包服务 ──
-openai:
-  BaseUrl: https://ark.cn-beijing.volces.com/api/v3
-  APIKey: ark-ed75ee35-931d-4978-bdd8-4f0a9fa4e230-5f52b
-  ModelEndpoint: ep-20260423223020-fxwrn
