@@ -16,7 +16,7 @@ system:
   #  rsa公钥
   RSAPublic: configs/rsa/public.pem
   #  过期时间（秒）
-  AccessTokenExpireTime: 3600
+  AccessTokenExpireTime: 900
   RefreshTokenExpireTime: 604800
   RedisExpireTime: 3600
   SessionExpireTime: 86400

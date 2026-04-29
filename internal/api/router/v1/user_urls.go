@@ -7,13 +7,14 @@ import (
 )
 
 func RegisterUserRoutes(engine *gin.RouterGroup) {
-	u := &user.UserAPI{}
+	u := user.NewUserAPI()
 	userGroup := engine.Group("/user")
 	{
 		userGroup.POST("/send-captcha", u.SendCaptcha)
 		userGroup.POST("/register", u.RegisterUser)
-		userGroup.GET("/login", u.Login)
+		userGroup.POST("/login", u.Login)
 		userGroup.Use(middleware.TokenRequired())
+		userGroup.POST("/logout", u.Logout)
 		userGroup.GET("/info", u.GetUserByID)
 		userGroup.PUT("/update", u.UpdateUser)
 	}
