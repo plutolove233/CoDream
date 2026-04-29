@@ -21,6 +21,12 @@ var (
 	ErrInvalidKey = errors.New("id cannot be nil")
 )
 
+
+var (
+	ErrEmailAlreadyExists = errors.New("email already exists")
+	ErrInvalidCaptcha     = errors.New("invalid or expired captcha")
+)
+
 // IsNotFound 检查是否是记录不存在错误
 func IsNotFound(err error) bool {
 	return errors.Is(err, ErrNotFound)

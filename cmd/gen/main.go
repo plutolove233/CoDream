@@ -5,11 +5,13 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/plutolove233/co-dream/internal/database"
+	"github.com/plutolove233/co-dream/internal/setting"
 	"gorm.io/gen"
 )
 
 func main() {
 	godotenv.Load()
+	setting.InitViper()
 	cfg := database.NewPostgreSqlConfig()
 	// 初始化数据库连接
 	database.InitPostgreSqlDatabase(context.Background(), cfg)

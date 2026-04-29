@@ -35,6 +35,7 @@ go.work.sum
 .agents/
 .DS_Store
 server
+gen
 .omx/
 *.pem
 SPEC.md
