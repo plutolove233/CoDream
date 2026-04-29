@@ -15,7 +15,7 @@ const TableNameCheckpoint = "checkpoints"
 // Checkpoint mapped from table <checkpoints>
 type Checkpoint struct {
 	ID          *string        `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	UserID      string         `gorm:"column:user_id;type:uuid;not null;index:idx_checkpoints_user_id,priority:1;index:idx_checkpoints_user_is_deleted,priority:1" json:"user_id"`
+	UserID      string         `gorm:"column:user_id;type:uuid;not null;index:idx_checkpoints_user_is_deleted,priority:1;index:idx_checkpoints_user_id,priority:1" json:"user_id"`
 	ExecutionID string         `gorm:"column:execution_id;type:uuid;not null;index:idx_checkpoints_execution_status,priority:1;index:idx_checkpoints_execution_id,priority:1" json:"execution_id"`
 	StageID     string         `gorm:"column:stage_id;type:uuid;not null;index:idx_checkpoints_stage_id,priority:1" json:"stage_id"`
 	Position    string         `gorm:"column:position;type:character varying(50);not null" json:"position"`

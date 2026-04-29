@@ -15,16 +15,16 @@ const TableNameStageExecution = "stage_executions"
 // StageExecution mapped from table <stage_executions>
 type StageExecution struct {
 	ID          *string        `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	UserID      string         `gorm:"column:user_id;type:uuid;not null;index:idx_stage_executions_user_is_deleted,priority:1;index:idx_stage_executions_user_id,priority:1" json:"user_id"`
-	ExecutionID string         `gorm:"column:execution_id;type:uuid;not null;index:idx_stage_executions_execution_id,priority:1;index:idx_stage_executions_execution_status,priority:1" json:"execution_id"`
+	UserID      string         `gorm:"column:user_id;type:uuid;not null;index:idx_stage_executions_user_id,priority:1;index:idx_stage_executions_user_is_deleted,priority:1" json:"user_id"`
+	ExecutionID string         `gorm:"column:execution_id;type:uuid;not null;index:idx_stage_executions_execution_status,priority:1;index:idx_stage_executions_execution_id,priority:1" json:"execution_id"`
 	StageName   string         `gorm:"column:stage_name;type:character varying(255);not null" json:"stage_name"`
 	StageOrder  int32          `gorm:"column:stage_order;type:integer;not null" json:"stage_order"`
-	Status      *string        `gorm:"column:status;type:character varying(50);not null;index:idx_stage_executions_status,priority:1;index:idx_stage_executions_execution_status,priority:2;default:pending" json:"status"`
+	Status      *string        `gorm:"column:status;type:character varying(50);not null;index:idx_stage_executions_execution_status,priority:2;index:idx_stage_executions_status,priority:1;default:pending" json:"status"`
 	Input       string         `gorm:"column:input;type:jsonb;not null" json:"input"`
 	Output      string         `gorm:"column:output;type:jsonb;not null" json:"output"`
 	Plan        string         `gorm:"column:plan;type:jsonb;not null" json:"plan"`
 	RetryCount  *int32         `gorm:"column:retry_count;type:integer" json:"retry_count"`
-	IsDeleted   bool           `gorm:"column:is_deleted;type:boolean;not null;index:idx_stage_executions_user_is_deleted,priority:2;index:idx_stage_executions_is_deleted,priority:1" json:"is_deleted"`
+	IsDeleted   bool           `gorm:"column:is_deleted;type:boolean;not null;index:idx_stage_executions_is_deleted,priority:1;index:idx_stage_executions_user_is_deleted,priority:2" json:"is_deleted"`
 	StartedAt   *time.Time     `gorm:"column:started_at;type:timestamp with time zone" json:"started_at"`
 	CompletedAt *time.Time     `gorm:"column:completed_at;type:timestamp with time zone" json:"completed_at"`
 	CreatedAt   *time.Time     `gorm:"column:created_at;type:timestamp with time zone;not null;index:idx_stage_executions_created_at,priority:1;default:now()" json:"created_at"`

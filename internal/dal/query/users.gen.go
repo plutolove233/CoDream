@@ -32,12 +32,12 @@ func newUser(db *gorm.DB, opts ...gen.DOOption) user {
 	_user.Username = field.NewString(tableName, "username")
 	_user.Email = field.NewString(tableName, "email")
 	_user.DisplayName = field.NewString(tableName, "display_name")
+	_user.Password = field.NewField(tableName, "password")
 	_user.Status = field.NewString(tableName, "status")
 	_user.IsDeleted = field.NewBool(tableName, "is_deleted")
 	_user.CreatedAt = field.NewTime(tableName, "created_at")
 	_user.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_user.DeletedAt = field.NewField(tableName, "deleted_at")
-	_user.Password = field.NewField(tableName, "password")
 
 	_user.fillFieldMap()
 
@@ -52,12 +52,12 @@ type user struct {
 	Username    field.String
 	Email       field.String
 	DisplayName field.String
+	Password    field.Field
 	Status      field.String
 	IsDeleted   field.Bool
 	CreatedAt   field.Time
 	UpdatedAt   field.Time
 	DeletedAt   field.Field
-	Password    field.Field
 
 	fieldMap map[string]field.Expr
 }
@@ -78,12 +78,12 @@ func (u *user) updateTableName(table string) *user {
 	u.Username = field.NewString(table, "username")
 	u.Email = field.NewString(table, "email")
 	u.DisplayName = field.NewString(table, "display_name")
+	u.Password = field.NewField(table, "password")
 	u.Status = field.NewString(table, "status")
 	u.IsDeleted = field.NewBool(table, "is_deleted")
 	u.CreatedAt = field.NewTime(table, "created_at")
 	u.UpdatedAt = field.NewTime(table, "updated_at")
 	u.DeletedAt = field.NewField(table, "deleted_at")
-	u.Password = field.NewField(table, "password")
 
 	u.fillFieldMap()
 
@@ -113,12 +113,12 @@ func (u *user) fillFieldMap() {
 	u.fieldMap["username"] = u.Username
 	u.fieldMap["email"] = u.Email
 	u.fieldMap["display_name"] = u.DisplayName
+	u.fieldMap["password"] = u.Password
 	u.fieldMap["status"] = u.Status
 	u.fieldMap["is_deleted"] = u.IsDeleted
 	u.fieldMap["created_at"] = u.CreatedAt
 	u.fieldMap["updated_at"] = u.UpdatedAt
 	u.fieldMap["deleted_at"] = u.DeletedAt
-	u.fieldMap["password"] = u.Password
 }
 
 func (u user) clone(db *gorm.DB) user {

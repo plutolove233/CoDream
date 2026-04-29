@@ -18,12 +18,12 @@ type User struct {
 	Username    string         `gorm:"column:username;type:character varying(255);not null" json:"username"`
 	Email       string         `gorm:"column:email;type:character varying(255);not null" json:"email"`
 	DisplayName *string        `gorm:"column:display_name;type:character varying(255)" json:"display_name"`
+	Password    []uint8        `gorm:"column:password;type:bytea;not null" json:"password"`
 	Status      *string        `gorm:"column:status;type:character varying(50);not null;index:idx_users_status,priority:1;default:active" json:"status"`
 	IsDeleted   bool           `gorm:"column:is_deleted;type:boolean;not null;index:idx_users_is_deleted,priority:1" json:"is_deleted"`
 	CreatedAt   *time.Time     `gorm:"column:created_at;type:timestamp with time zone;not null;index:idx_users_created_at,priority:1;default:now()" json:"created_at"`
 	UpdatedAt   *time.Time     `gorm:"column:updated_at;type:timestamp with time zone;not null;default:now()" json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"column:deleted_at;type:timestamp with time zone;index:idx_users_deleted_at,priority:1" json:"deleted_at"`
-	Password    []uint8        `gorm:"column:password;type:bytea;not null" json:"password"`
 }
 
 // TableName User's table name

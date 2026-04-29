@@ -6,11 +6,66 @@ import (
 	"github.com/plutolove233/co-dream/internal/globals"
 	"github.com/plutolove233/co-dream/internal/utils/captcha"
 	"github.com/plutolove233/co-dream/internal/utils/email"
+	"github.com/plutolove233/co-dream/internal/utils/jwt"
 	"github.com/plutolove233/co-dream/internal/utils/rsa"
 	"github.com/spf13/viper"
 )
 
 type UserAPI struct {
+}
+
+type LoginParser struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+}
+
+func (u *UserAPI) Login(c *gin.Context) {
+	var parser LoginParser
+	if err := c.ShouldBindJSON(&parser); err != nil {
+		globals.JsonParameterIllegal(c, "请求参数不符合要求", err)
+		return
+	}
+	ctx := c.Request.Context()
+
+	// 1. 根据邮箱查询用户
+	var userService service.UserService
+	userService.Email = parser.Email
+	err := userService.Get(ctx)
+	if err != nil {
+		if err.Error() == "record not found" {
+			globals.JsonDataError(c, "用户不存在", err)
+			return
+		} else {
+			globals.JsonDBError(c, "查询用户失败", err)
+			return
+		}
+	}
+	// 2. RSA解密密码
+	rsaUtil := rsa.RSA{
+		PublicKeyPath:  viper.GetString("system.RSAPublic"),
+		PrivateKeyPath: viper.GetString("system.RSAPrivate"),
+	}
+	decryptedPassword, err := rsaUtil.Decrypt(userService.Password)
+	if err != nil {
+		globals.JsonInternalError(c, "密码解密失败", err)
+		return
+	}
+
+	// 3. 比较密码
+	if string(decryptedPassword) != parser.Password {
+		globals.JsonAccessDenied(c, "密码错误")
+		return
+	}
+	// 4. 生成token
+	token, err := jwt.MakeToken(*userService.ID)
+	if err != nil {
+		globals.JsonInternalError(c, "生成Token失败", err)
+		return
+	}
+
+	globals.JsonOK(c, "登录成功", map[string]any{
+		"token": token,
+	})
 }
 
 type RegisterParser struct {
@@ -33,7 +88,11 @@ func (u *UserAPI) RegisterUser(c *gin.Context) {
 	var userService service.UserService
 	userService.Email = parser.Email
 	err := userService.Get(ctx)
-	if err == nil && userService.ID != nil {
+	if err != nil && err.Error() != "record not found" {
+		globals.JsonDBError(c, "查询用户失败", err)
+		return
+	}
+	if userService.ID != nil {
 		globals.JsonParameterIllegal(c, "邮箱已存在", globals.ErrEmailAlreadyExists)
 		return
 	}
@@ -74,7 +133,7 @@ func (u *UserAPI) RegisterUser(c *gin.Context) {
 	newUserService.Password = encryptedPassword
 	err = newUserService.Add(ctx)
 	if err != nil {
-		globals.JsonInternalError(c, "创建用户失败", err)
+		globals.JsonDBError(c, "创建用户失败", err)
 		return
 	}
 	// 6. 返回成功响应

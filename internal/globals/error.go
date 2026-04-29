@@ -25,6 +25,7 @@ var (
 var (
 	ErrEmailAlreadyExists = errors.New("email already exists")
 	ErrInvalidCaptcha     = errors.New("invalid or expired captcha")
+	ErrInvalidCredentials = errors.New("invalid username or password")
 )
 
 // IsNotFound 检查是否是记录不存在错误

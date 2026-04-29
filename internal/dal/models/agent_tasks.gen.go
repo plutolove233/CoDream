@@ -15,7 +15,7 @@ const TableNameAgentTask = "agent_tasks"
 // AgentTask mapped from table <agent_tasks>
 type AgentTask struct {
 	ID               *string        `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	UserID           string         `gorm:"column:user_id;type:uuid;not null;index:idx_agent_tasks_user_id,priority:1;index:idx_agent_tasks_user_is_deleted,priority:1" json:"user_id"`
+	UserID           string         `gorm:"column:user_id;type:uuid;not null;index:idx_agent_tasks_user_is_deleted,priority:1;index:idx_agent_tasks_user_id,priority:1" json:"user_id"`
 	StageExecutionID string         `gorm:"column:stage_execution_id;type:uuid;not null;index:idx_agent_tasks_stage_status,priority:1;index:idx_agent_tasks_stage_execution_id,priority:1" json:"stage_execution_id"`
 	AgentType        string         `gorm:"column:agent_type;type:character varying(255);not null;index:idx_agent_tasks_agent_type,priority:1" json:"agent_type"`
 	Status           *string        `gorm:"column:status;type:character varying(50);not null;index:idx_agent_tasks_stage_status,priority:2;index:idx_agent_tasks_status,priority:1;default:queued" json:"status"`

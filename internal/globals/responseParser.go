@@ -25,7 +25,7 @@ func JsonParameterIllegal(c *gin.Context, msg string, err error) {
 	c.JSON(http.StatusOK, gin.H{
 		"code":    ParameterIllegal,
 		"message": msg,
-		"err":     err.Error(),
+		"data":    err.Error(),
 	})
 }
 
@@ -36,7 +36,7 @@ func JsonDataError(c *gin.Context, msg string, err error) {
 	c.JSON(http.StatusOK, gin.H{
 		"code":    DataError,
 		"message": msg,
-		"err":     err.Error(),
+		"data":    err.Error(),
 	})
 }
 
@@ -50,7 +50,7 @@ func JsonNotData(c *gin.Context, msg string, err error) {
 	c.JSON(http.StatusOK, gin.H{
 		"code":    DataError,
 		"message": msg,
-		"err":     err.Error(),
+		"data":    err.Error(),
 	})
 }
 
@@ -61,7 +61,7 @@ func JsonInternalError(c *gin.Context, msg string, err error) {
 	c.JSON(http.StatusOK, gin.H{
 		"code":    InternalError,
 		"message": msg,
-		"err":     err.Error(),
+		"data":    err.Error(),
 	})
 }
 
@@ -73,7 +73,7 @@ func JsonDBError(c *gin.Context, msg string, err error) {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    NotData,
 			"message": msg,
-			"err":     err.Error(),
+			"data":    err.Error(),
 		})
 		return
 	}
@@ -83,7 +83,7 @@ func JsonDBError(c *gin.Context, msg string, err error) {
 	c.JSON(http.StatusOK, gin.H{
 		"code":    DBError,
 		"message": msg,
-		"err":     err.Error(),
+		"data":    err.Error(),
 	})
 }
 
@@ -111,7 +111,7 @@ func JsonLoginError(c *gin.Context, msg string, err error) {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    LoginError,
 			"message": msg,
-			"err":     err,
+			"data":    err,
 		})
 	}
 }
