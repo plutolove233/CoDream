@@ -23,6 +23,7 @@ type User struct {
 	CreatedAt   *time.Time     `gorm:"column:created_at;type:timestamp with time zone;not null;index:idx_users_created_at,priority:1;default:now()" json:"created_at"`
 	UpdatedAt   *time.Time     `gorm:"column:updated_at;type:timestamp with time zone;not null;default:now()" json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"column:deleted_at;type:timestamp with time zone;index:idx_users_deleted_at,priority:1" json:"deleted_at"`
+	Password    []uint8        `gorm:"column:password;type:bytea;not null" json:"password"`
 }
 
 // TableName User's table name

@@ -21,7 +21,7 @@ type Pipeline struct {
 	Config      string         `gorm:"column:config;type:jsonb;not null" json:"config"`
 	Status      *string        `gorm:"column:status;type:character varying(50);not null;index:idx_pipelines_status,priority:1;default:pending" json:"status"`
 	CreatedBy   *string        `gorm:"column:created_by;type:character varying(255);index:idx_pipelines_created_by,priority:1" json:"created_by"`
-	IsDeleted   bool           `gorm:"column:is_deleted;type:boolean;not null;index:idx_pipelines_is_deleted,priority:1;index:idx_pipelines_user_is_deleted,priority:2" json:"is_deleted"`
+	IsDeleted   bool           `gorm:"column:is_deleted;type:boolean;not null;index:idx_pipelines_user_is_deleted,priority:2;index:idx_pipelines_is_deleted,priority:1" json:"is_deleted"`
 	CreatedAt   *time.Time     `gorm:"column:created_at;type:timestamp with time zone;not null;index:idx_pipelines_created_at,priority:1;default:now()" json:"created_at"`
 	UpdatedAt   *time.Time     `gorm:"column:updated_at;type:timestamp with time zone;not null;default:now()" json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"column:deleted_at;type:timestamp with time zone;index:idx_pipelines_deleted_at,priority:1" json:"deleted_at"`

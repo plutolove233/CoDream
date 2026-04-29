@@ -15,7 +15,7 @@ const TableNamePipelineExecution = "pipeline_executions"
 // PipelineExecution mapped from table <pipeline_executions>
 type PipelineExecution struct {
 	ID                *string        `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	UserID            string         `gorm:"column:user_id;type:uuid;not null;index:idx_pipeline_executions_user_id,priority:1;index:idx_pipeline_executions_user_is_deleted,priority:1" json:"user_id"`
+	UserID            string         `gorm:"column:user_id;type:uuid;not null;index:idx_pipeline_executions_user_is_deleted,priority:1;index:idx_pipeline_executions_user_id,priority:1" json:"user_id"`
 	PipelineID        string         `gorm:"column:pipeline_id;type:uuid;not null;index:idx_pipeline_executions_pipeline_id,priority:1" json:"pipeline_id"`
 	Status            *string        `gorm:"column:status;type:character varying(50);not null;index:idx_pipeline_executions_status,priority:1;index:idx_pipeline_executions_status_created,priority:1;default:pending" json:"status"`
 	CurrentStageIndex *int32         `gorm:"column:current_stage_index;type:integer" json:"current_stage_index"`

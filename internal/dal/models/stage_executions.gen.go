@@ -15,11 +15,11 @@ const TableNameStageExecution = "stage_executions"
 // StageExecution mapped from table <stage_executions>
 type StageExecution struct {
 	ID          *string        `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	UserID      string         `gorm:"column:user_id;type:uuid;not null;index:idx_stage_executions_user_id,priority:1;index:idx_stage_executions_user_is_deleted,priority:1" json:"user_id"`
-	ExecutionID string         `gorm:"column:execution_id;type:uuid;not null;index:idx_stage_executions_execution_status,priority:1;index:idx_stage_executions_execution_id,priority:1" json:"execution_id"`
+	UserID      string         `gorm:"column:user_id;type:uuid;not null;index:idx_stage_executions_user_is_deleted,priority:1;index:idx_stage_executions_user_id,priority:1" json:"user_id"`
+	ExecutionID string         `gorm:"column:execution_id;type:uuid;not null;index:idx_stage_executions_execution_id,priority:1;index:idx_stage_executions_execution_status,priority:1" json:"execution_id"`
 	StageName   string         `gorm:"column:stage_name;type:character varying(255);not null" json:"stage_name"`
 	StageOrder  int32          `gorm:"column:stage_order;type:integer;not null" json:"stage_order"`
-	Status      *string        `gorm:"column:status;type:character varying(50);not null;index:idx_stage_executions_execution_status,priority:2;index:idx_stage_executions_status,priority:1;default:pending" json:"status"`
+	Status      *string        `gorm:"column:status;type:character varying(50);not null;index:idx_stage_executions_status,priority:1;index:idx_stage_executions_execution_status,priority:2;default:pending" json:"status"`
 	Input       string         `gorm:"column:input;type:jsonb;not null" json:"input"`
 	Output      string         `gorm:"column:output;type:jsonb;not null" json:"output"`
 	Plan        string         `gorm:"column:plan;type:jsonb;not null" json:"plan"`
