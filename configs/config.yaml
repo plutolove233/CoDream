@@ -9,13 +9,15 @@ system:
   #  环境
   Mode: debug
   #  秘钥
-  Secret: f977ce82bf2c67551cd75625db7c238a4bf59b9ec663297ebd08ad23f15bcb52
+  AccessSecret: c0dreamAccess
+  RefreshSecret: c0dreamRefresh
   #  rsa私钥
   RSAPrivate: configs/rsa/private.pem
   #  rsa公钥
   RSAPublic: configs/rsa/public.pem
   #  过期时间（秒）
-  TokenExpireTime: 3600
+  AccessTokenExpireTime: 3600
+  RefreshTokenExpireTime: 604800
   RedisExpireTime: 3600
   SessionExpireTime: 86400
   #  服务中心ID
