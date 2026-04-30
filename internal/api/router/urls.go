@@ -3,8 +3,8 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/plutolove233/co-dream/internal/api/handler"
+	"github.com/plutolove233/co-dream/internal/api/handler/ws"
 	v1 "github.com/plutolove233/co-dream/internal/api/router/v1"
-	"github.com/plutolove233/co-dream/internal/api/ws"
 )
 
 func InitRouter(engine *gin.Engine) {
@@ -12,7 +12,8 @@ func InitRouter(engine *gin.Engine) {
 	{
 		base := engine.Group("/api/v1")
 		base.GET("/version", handler.GetVersion)
-		v1.RegisterUserRoutes(base)
+		v1.RegisterUserRouters(base)
+		v1.RegisterMessageRouters(base)
 	}
 	// ws基本路由
 	{

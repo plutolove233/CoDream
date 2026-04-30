@@ -6,7 +6,7 @@ import (
 	"github.com/plutolove233/co-dream/internal/api/middleware"
 )
 
-func RegisterUserRoutes(engine *gin.RouterGroup) {
+func RegisterUserRouters(engine *gin.RouterGroup) {
 	u := user.NewUserAPI()
 	userGroup := engine.Group("/user")
 	{
