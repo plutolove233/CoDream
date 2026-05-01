@@ -15,15 +15,15 @@ const TableNameAgentTask = "agent_tasks"
 // AgentTask mapped from table <agent_tasks>
 type AgentTask struct {
 	ID               *string        `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	UserID           string         `gorm:"column:user_id;type:uuid;not null;index:idx_agent_tasks_user_is_deleted,priority:1;index:idx_agent_tasks_user_id,priority:1" json:"user_id"`
-	StageExecutionID string         `gorm:"column:stage_execution_id;type:uuid;not null;index:idx_agent_tasks_stage_status,priority:1;index:idx_agent_tasks_stage_execution_id,priority:1" json:"stage_execution_id"`
+	UserID           string         `gorm:"column:user_id;type:uuid;not null;index:idx_agent_tasks_user_id,priority:1;index:idx_agent_tasks_user_is_deleted,priority:1" json:"user_id"`
+	StageExecutionID string         `gorm:"column:stage_execution_id;type:uuid;not null;index:idx_agent_tasks_stage_execution_id,priority:1;index:idx_agent_tasks_stage_status,priority:1" json:"stage_execution_id"`
 	AgentType        string         `gorm:"column:agent_type;type:character varying(255);not null;index:idx_agent_tasks_agent_type,priority:1" json:"agent_type"`
-	Status           *string        `gorm:"column:status;type:character varying(50);not null;index:idx_agent_tasks_stage_status,priority:2;index:idx_agent_tasks_status,priority:1;default:queued" json:"status"`
+	Status           *string        `gorm:"column:status;type:character varying(50);not null;index:idx_agent_tasks_status,priority:1;index:idx_agent_tasks_stage_status,priority:2;default:queued" json:"status"`
 	Input            string         `gorm:"column:input;type:jsonb;not null" json:"input"`
 	Output           string         `gorm:"column:output;type:jsonb;not null" json:"output"`
 	ModelConfig      string         `gorm:"column:model_config;type:jsonb;not null" json:"model_config"`
 	TokenUsage       string         `gorm:"column:token_usage;type:jsonb;not null" json:"token_usage"`
-	IsDeleted        bool           `gorm:"column:is_deleted;type:boolean;not null;index:idx_agent_tasks_user_is_deleted,priority:2;index:idx_agent_tasks_is_deleted,priority:1" json:"is_deleted"`
+	IsDeleted        bool           `gorm:"column:is_deleted;type:boolean;not null;index:idx_agent_tasks_is_deleted,priority:1;index:idx_agent_tasks_user_is_deleted,priority:2" json:"is_deleted"`
 	StartedAt        *time.Time     `gorm:"column:started_at;type:timestamp with time zone" json:"started_at"`
 	CompletedAt      *time.Time     `gorm:"column:completed_at;type:timestamp with time zone" json:"completed_at"`
 	CreatedAt        *time.Time     `gorm:"column:created_at;type:timestamp with time zone;not null;index:idx_agent_tasks_created_at,priority:1;default:now()" json:"created_at"`

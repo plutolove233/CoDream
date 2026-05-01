@@ -24,7 +24,7 @@ type StageExecution struct {
 	Output      string         `gorm:"column:output;type:jsonb;not null" json:"output"`
 	Plan        string         `gorm:"column:plan;type:jsonb;not null" json:"plan"`
 	RetryCount  *int32         `gorm:"column:retry_count;type:integer" json:"retry_count"`
-	IsDeleted   bool           `gorm:"column:is_deleted;type:boolean;not null;index:idx_stage_executions_is_deleted,priority:1;index:idx_stage_executions_user_is_deleted,priority:2" json:"is_deleted"`
+	IsDeleted   bool           `gorm:"column:is_deleted;type:boolean;not null;index:idx_stage_executions_user_is_deleted,priority:2;index:idx_stage_executions_is_deleted,priority:1" json:"is_deleted"`
 	StartedAt   *time.Time     `gorm:"column:started_at;type:timestamp with time zone" json:"started_at"`
 	CompletedAt *time.Time     `gorm:"column:completed_at;type:timestamp with time zone" json:"completed_at"`
 	CreatedAt   *time.Time     `gorm:"column:created_at;type:timestamp with time zone;not null;index:idx_stage_executions_created_at,priority:1;default:now()" json:"created_at"`

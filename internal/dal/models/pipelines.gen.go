@@ -15,7 +15,7 @@ const TableNamePipeline = "pipelines"
 // Pipeline mapped from table <pipelines>
 type Pipeline struct {
 	ID          *string        `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	UserID      string         `gorm:"column:user_id;type:uuid;not null;index:idx_pipelines_user_id,priority:1;index:idx_pipelines_user_is_deleted,priority:1" json:"user_id"`
+	UserID      string         `gorm:"column:user_id;type:uuid;not null;index:idx_pipelines_user_is_deleted,priority:1;index:idx_pipelines_user_id,priority:1" json:"user_id"`
 	Name        string         `gorm:"column:name;type:character varying(255);not null;index:idx_pipelines_name,priority:1" json:"name"`
 	Description *string        `gorm:"column:description;type:text" json:"description"`
 	Config      string         `gorm:"column:config;type:jsonb;not null" json:"config"`

@@ -27,7 +27,69 @@ CREATE INDEX idx_users_created_at ON users(created_at DESC);
 CREATE INDEX idx_users_deleted_at ON users(deleted_at);
 
 -- ============================================
--- 2. Pipelines 表 (流水线定义)
+-- 2. Sessions 表 (聊天会话)
+-- ============================================
+CREATE TABLE IF NOT EXISTS sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+    title VARCHAR(255),
+    summary TEXT,
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    last_message_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT uk_sessions_id_user UNIQUE (id, user_id)
+);
+
+CREATE INDEX idx_sessions_user_id ON sessions(user_id);
+CREATE INDEX idx_sessions_status ON sessions(status);
+CREATE INDEX idx_sessions_is_deleted ON sessions(is_deleted);
+CREATE INDEX idx_sessions_user_is_deleted ON sessions(user_id, is_deleted);
+CREATE INDEX idx_sessions_last_message_at ON sessions(last_message_at DESC);
+CREATE INDEX idx_sessions_created_at ON sessions(created_at DESC);
+CREATE INDEX idx_sessions_deleted_at ON sessions(deleted_at);
+
+-- ============================================
+-- 3. Messages 表 (聊天消息)
+-- ============================================
+CREATE TABLE IF NOT EXISTS messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+    session_id UUID NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    message_order INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    tool_calls JSONB NOT NULL DEFAULT '[]'::jsonb,
+    token_usage JSONB NOT NULL DEFAULT '{}'::jsonb,
+    model VARCHAR(255),
+    finish_reason VARCHAR(100),
+    status VARCHAR(50) NOT NULL DEFAULT 'completed',
+    metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT fk_messages_session_user
+        FOREIGN KEY (session_id, user_id) REFERENCES sessions(id, user_id) ON DELETE CASCADE,
+    CONSTRAINT uk_messages_session_order UNIQUE (session_id, message_order),
+    CONSTRAINT chk_messages_role CHECK (role IN ('system', 'user', 'assistant', 'tool'))
+);
+
+CREATE INDEX idx_messages_user_id ON messages(user_id);
+CREATE INDEX idx_messages_session_id ON messages(session_id);
+CREATE INDEX idx_messages_role ON messages(role);
+CREATE INDEX idx_messages_status ON messages(status);
+CREATE INDEX idx_messages_is_deleted ON messages(is_deleted);
+CREATE INDEX idx_messages_user_is_deleted ON messages(user_id, is_deleted);
+CREATE INDEX idx_messages_session_order ON messages(session_id, message_order);
+CREATE INDEX idx_messages_created_at ON messages(created_at DESC);
+CREATE INDEX idx_messages_deleted_at ON messages(deleted_at);
+
+-- ============================================
+-- 4. Pipelines 表 (流水线定义)
 -- ============================================
 CREATE TABLE IF NOT EXISTS pipelines (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -54,7 +116,7 @@ CREATE INDEX idx_pipelines_created_at ON pipelines(created_at DESC);
 CREATE INDEX idx_pipelines_deleted_at ON pipelines(deleted_at);
 
 -- ============================================
--- 3. Pipeline Executions 表 (执行实例)
+-- 5. Pipeline Executions 表 (执行实例)
 -- ============================================
 CREATE TABLE IF NOT EXISTS pipeline_executions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -85,7 +147,7 @@ CREATE INDEX idx_pipeline_executions_deleted_at ON pipeline_executions(deleted_a
 CREATE INDEX idx_pipeline_executions_status_created ON pipeline_executions(status, created_at DESC);
 
 -- ============================================
--- 4. Stage Executions 表 (阶段执行)
+-- 6. Stage Executions 表 (阶段执行)
 -- ============================================
 CREATE TABLE IF NOT EXISTS stage_executions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -119,7 +181,7 @@ CREATE INDEX idx_stage_executions_deleted_at ON stage_executions(deleted_at);
 CREATE INDEX idx_stage_executions_execution_status ON stage_executions(execution_id, status);
 
 -- ============================================
--- 5. Checkpoints 表 (检查点)
+-- 7. Checkpoints 表 (检查点)
 -- ============================================
 CREATE TABLE IF NOT EXISTS checkpoints (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -150,7 +212,7 @@ CREATE INDEX idx_checkpoints_deleted_at ON checkpoints(deleted_at);
 CREATE INDEX idx_checkpoints_execution_status ON checkpoints(execution_id, status);
 
 -- ============================================
--- 6. Agent Tasks 表 (Agent任务)
+-- 8. Agent Tasks 表 (Agent任务)
 -- ============================================
 CREATE TABLE IF NOT EXISTS agent_tasks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -194,6 +256,12 @@ END;
 $$ language 'plpgsql';
 
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_sessions_updated_at BEFORE UPDATE ON sessions
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_messages_updated_at BEFORE UPDATE ON messages
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_pipelines_updated_at BEFORE UPDATE ON pipelines

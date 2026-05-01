@@ -16,13 +16,13 @@ const TableNameCheckpoint = "checkpoints"
 type Checkpoint struct {
 	ID          *string        `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	UserID      string         `gorm:"column:user_id;type:uuid;not null;index:idx_checkpoints_user_is_deleted,priority:1;index:idx_checkpoints_user_id,priority:1" json:"user_id"`
-	ExecutionID string         `gorm:"column:execution_id;type:uuid;not null;index:idx_checkpoints_execution_status,priority:1;index:idx_checkpoints_execution_id,priority:1" json:"execution_id"`
+	ExecutionID string         `gorm:"column:execution_id;type:uuid;not null;index:idx_checkpoints_execution_id,priority:1;index:idx_checkpoints_execution_status,priority:1" json:"execution_id"`
 	StageID     string         `gorm:"column:stage_id;type:uuid;not null;index:idx_checkpoints_stage_id,priority:1" json:"stage_id"`
 	Position    string         `gorm:"column:position;type:character varying(50);not null" json:"position"`
 	Status      *string        `gorm:"column:status;type:character varying(50);not null;index:idx_checkpoints_execution_status,priority:2;index:idx_checkpoints_status,priority:1;default:pending" json:"status"`
 	Artifacts   string         `gorm:"column:artifacts;type:jsonb;not null" json:"artifacts"`
 	Decision    string         `gorm:"column:decision;type:jsonb;not null" json:"decision"`
-	IsDeleted   bool           `gorm:"column:is_deleted;type:boolean;not null;index:idx_checkpoints_user_is_deleted,priority:2;index:idx_checkpoints_is_deleted,priority:1" json:"is_deleted"`
+	IsDeleted   bool           `gorm:"column:is_deleted;type:boolean;not null;index:idx_checkpoints_is_deleted,priority:1;index:idx_checkpoints_user_is_deleted,priority:2" json:"is_deleted"`
 	CreatedAt   *time.Time     `gorm:"column:created_at;type:timestamp with time zone;not null;default:now()" json:"created_at"`
 	DecidedAt   *time.Time     `gorm:"column:decided_at;type:timestamp with time zone" json:"decided_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"column:deleted_at;type:timestamp with time zone;index:idx_checkpoints_deleted_at,priority:1" json:"deleted_at"`

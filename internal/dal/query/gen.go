@@ -19,8 +19,10 @@ var (
 	Q                 = new(Query)
 	AgentTask         *agentTask
 	Checkpoint        *checkpoint
+	Message           *message
 	Pipeline          *pipeline
 	PipelineExecution *pipelineExecution
+	Session           *session
 	StageExecution    *stageExecution
 	User              *user
 )
@@ -29,8 +31,10 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	AgentTask = &Q.AgentTask
 	Checkpoint = &Q.Checkpoint
+	Message = &Q.Message
 	Pipeline = &Q.Pipeline
 	PipelineExecution = &Q.PipelineExecution
+	Session = &Q.Session
 	StageExecution = &Q.StageExecution
 	User = &Q.User
 }
@@ -40,8 +44,10 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		db:                db,
 		AgentTask:         newAgentTask(db, opts...),
 		Checkpoint:        newCheckpoint(db, opts...),
+		Message:           newMessage(db, opts...),
 		Pipeline:          newPipeline(db, opts...),
 		PipelineExecution: newPipelineExecution(db, opts...),
+		Session:           newSession(db, opts...),
 		StageExecution:    newStageExecution(db, opts...),
 		User:              newUser(db, opts...),
 	}
@@ -52,8 +58,10 @@ type Query struct {
 
 	AgentTask         agentTask
 	Checkpoint        checkpoint
+	Message           message
 	Pipeline          pipeline
 	PipelineExecution pipelineExecution
+	Session           session
 	StageExecution    stageExecution
 	User              user
 }
@@ -65,8 +73,10 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		db:                db,
 		AgentTask:         q.AgentTask.clone(db),
 		Checkpoint:        q.Checkpoint.clone(db),
+		Message:           q.Message.clone(db),
 		Pipeline:          q.Pipeline.clone(db),
 		PipelineExecution: q.PipelineExecution.clone(db),
+		Session:           q.Session.clone(db),
 		StageExecution:    q.StageExecution.clone(db),
 		User:              q.User.clone(db),
 	}
@@ -85,8 +95,10 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		db:                db,
 		AgentTask:         q.AgentTask.replaceDB(db),
 		Checkpoint:        q.Checkpoint.replaceDB(db),
+		Message:           q.Message.replaceDB(db),
 		Pipeline:          q.Pipeline.replaceDB(db),
 		PipelineExecution: q.PipelineExecution.replaceDB(db),
+		Session:           q.Session.replaceDB(db),
 		StageExecution:    q.StageExecution.replaceDB(db),
 		User:              q.User.replaceDB(db),
 	}
@@ -95,8 +107,10 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 type queryCtx struct {
 	AgentTask         IAgentTaskDo
 	Checkpoint        ICheckpointDo
+	Message           IMessageDo
 	Pipeline          IPipelineDo
 	PipelineExecution IPipelineExecutionDo
+	Session           ISessionDo
 	StageExecution    IStageExecutionDo
 	User              IUserDo
 }
@@ -105,8 +119,10 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
 		AgentTask:         q.AgentTask.WithContext(ctx),
 		Checkpoint:        q.Checkpoint.WithContext(ctx),
+		Message:           q.Message.WithContext(ctx),
 		Pipeline:          q.Pipeline.WithContext(ctx),
 		PipelineExecution: q.PipelineExecution.WithContext(ctx),
+		Session:           q.Session.WithContext(ctx),
 		StageExecution:    q.StageExecution.WithContext(ctx),
 		User:              q.User.WithContext(ctx),
 	}
