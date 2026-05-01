@@ -17,7 +17,7 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      - codream_postgres_data:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-codream} -d ${POSTGRES_DB:-codream}"]
       interval: 10s
@@ -47,7 +47,7 @@ services:
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
-      - codream_redis_data:/data
+      - ./data/redis:/data
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-codream_redis_secret}", "ping"]
       interval: 10s
@@ -64,16 +64,3 @@ networks:
   codream_net:
     name: codream_net
     driver: bridge
-
-# ─────────────────────────────────────────────
-# 持久化卷
-# ─────────────────────────────────────────────
-volumes:
-  codream_postgres_data:
-    name: codream_postgres_data
-  codream_redis_data:
-    name: codream_redis_data
-  codream_pgadmin_data:
-    name: codream_pgadmin_data
-  codream_redis_insight_data:
-    name: codream_redis_insight_data

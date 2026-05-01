@@ -50,3 +50,8 @@ redis:
   RedisHost: localhost
   RedisPassword: codream_redis_secret     # 生产环境请替换为强密码
   RedisPort: 6379
+
+# —— Agent ──
+agent:
+  skillsPath: configs/skills
+  agentsPath: configs/agents

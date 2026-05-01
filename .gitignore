@@ -40,3 +40,4 @@ key
 .omx/
 *.pem
 SPEC.md
+data/

@@ -13,7 +13,6 @@ func InitRouter(engine *gin.Engine) {
 		base := engine.Group("/api/v1")
 		base.GET("/version", handler.GetVersion)
 		v1.RegisterUserRouters(base)
-		v1.RegisterMessageRouters(base)
 	}
 	// ws基本路由
 	{
