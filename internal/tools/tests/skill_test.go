@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/plutolove233/co-dream/internal/tools"
 	"github.com/plutolove233/co-dream/internal/skill"
+	"github.com/plutolove233/co-dream/internal/tools"
 )
 
 func TestSkillToolExecuteLoadsContext(t *testing.T) {
@@ -113,14 +113,14 @@ Check for bugs, regressions, and missing tests.`
 	if skillProp.Type != "string" {
 		t.Fatalf("unexpected skill type: %v", skillProp.Type)
 	}
-	if skillProp.Description != "Name of the skill to load" {
+	if skillProp.Description != "The name of the skill to load (must be registered)." {
 		t.Fatalf("unexpected skill description: %v", skillProp.Description)
 	}
 	contextProp := properties["context"]
 	if contextProp.Type != "string" {
 		t.Fatalf("unexpected context type: %v", contextProp.Type)
 	}
-	if contextProp.Description != "Optional request or task context to append to the loaded skill" {
+	if contextProp.Description != "Optional context to provide when loading the skill." {
 		t.Fatalf("unexpected context description: %v", contextProp.Description)
 	}
 	required := params.Required

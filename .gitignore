@@ -41,3 +41,4 @@ key
 *.pem
 SPEC.md
 data/
+.cache/

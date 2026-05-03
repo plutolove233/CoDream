@@ -213,10 +213,11 @@ func (r *Registry) Filter(allowedTools []string) interfaces.ToolRegistry {
 			register.Register(t)
 		}
 	}
-	if _, ok := register.Get("task"); ok {
-		// Prevent recursive sub-agents by removing "task" from the filtered registry if it was included in the whitelist
-		if t, ok := r.Get("task"); ok {
-			register.Unregister(t.Name())
+	for _, recursiveTool := range []string{"task", "run_agent"} {
+		if _, ok := register.Get(recursiveTool); ok {
+			// Prevent recursive sub-agents by removing delegation tools from
+			// filtered registries if they were included in the whitelist.
+			register.Unregister(recursiveTool)
 		}
 	}
 
