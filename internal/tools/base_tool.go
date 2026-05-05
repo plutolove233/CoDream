@@ -23,7 +23,7 @@ var validate = validator.New(validator.WithRequiredStructEnabled())
 //	byte slice  →  json.Unmarshal into T
 //	→  validate.Struct(T)            (tag-driven field constraints)
 //	→  extraValidate(T)              (optional runtime checks, e.g. path sandbox)
-//	→  fn(T)                         (business logic)
+//	→  fn(T) or ctxFn(ctx, T)         (business logic)
 //
 // Concrete tools only need to supply T, fn, and optionally extraValidate.
 type BaseTool[T any] struct {
@@ -32,6 +32,7 @@ type BaseTool[T any] struct {
 	parameters    jsonschema.Definition
 	metadata      types.ToolMetadata
 	fn            func(T) (string, error)
+	ctxFn         func(context.Context, T) (string, error)
 	extraValidate func(T) error
 }
 
@@ -63,6 +64,12 @@ func (t *BaseTool[T]) Execute(ctx context.Context, input []byte) (string, error)
 	case <-ctx.Done():
 		return "", ctx.Err()
 	default:
+		if t.ctxFn != nil {
+			return t.ctxFn(ctx, p)
+		}
+		if t.fn == nil {
+			return "", fmt.Errorf("tool %q has no execute function", t.name)
+		}
 		return t.fn(p)
 	}
 }

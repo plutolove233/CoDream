@@ -45,72 +45,57 @@ type RunAgentInput struct {
 }
 
 type RunAgentTool struct {
+	BaseTool[RunAgentInput]
 	runtime *agents.CollaborationRuntime
 	scope   AgentToolContext
 }
 
 func NewRunAgentTool(runtime *agents.CollaborationRuntime, scope AgentToolContext) *RunAgentTool {
-	return &RunAgentTool{runtime: runtime, scope: scope}
-}
-
-func (t *RunAgentTool) Name() string {
-	return "run_agent"
-}
-
-func (t *RunAgentTool) Description() string {
-	return "Run an isolated ReAct sub-agent by name. Use this when the main agent needs a specialist agent to work independently or in parallel."
-}
-
-func (t *RunAgentTool) Metadata() types.ToolMetadata {
-	return types.ToolMetadata{Category: types.CategoryExternal}
-}
-
-func (t *RunAgentTool) Parameters() jsonschema.Definition {
-	return jsonschema.Definition{
-		Type: jsonschema.Object,
-		Properties: map[string]jsonschema.Definition{
-			"agent_name": {
-				Type:        jsonschema.String,
-				Description: "Registered sub-agent name, such as code_generator or code_reviewer.",
+	t := &RunAgentTool{runtime: runtime, scope: scope}
+	t.BaseTool = BaseTool[RunAgentInput]{
+		name:        "run_agent",
+		description: "Run an isolated ReAct sub-agent by name. Use this when the main agent needs a specialist agent to work independently or in parallel.",
+		parameters: jsonschema.Definition{
+			Type: jsonschema.Object,
+			Properties: map[string]jsonschema.Definition{
+				"agent_name": {
+					Type:        jsonschema.String,
+					Description: "Registered sub-agent name, such as code_generator or code_reviewer.",
+				},
+				"task_id": {
+					Type:        jsonschema.String,
+					Description: "Stable task identifier for traceability.",
+				},
+				"instructions": {
+					Type:        jsonschema.String,
+					Description: "Concrete task instructions for the sub-agent.",
+				},
+				"channel_id": {
+					Type:        jsonschema.String,
+					Description: "Optional collaboration channel shared with related sub-agents.",
+				},
+				"context": {
+					Type:        jsonschema.Object,
+					Description: "Sub-agent specific context. This is copied before the sub-agent receives it.",
+				},
+				"max_tool_rounds": {
+					Type:        jsonschema.Number,
+					Description: "Optional per-run ReAct tool round limit.",
+				},
+				"metadata": {
+					Type:        jsonschema.Object,
+					Description: "Optional trace metadata for frontend or audit display.",
+				},
 			},
-			"task_id": {
-				Type:        jsonschema.String,
-				Description: "Stable task identifier for traceability.",
-			},
-			"instructions": {
-				Type:        jsonschema.String,
-				Description: "Concrete task instructions for the sub-agent.",
-			},
-			"channel_id": {
-				Type:        jsonschema.String,
-				Description: "Optional collaboration channel shared with related sub-agents.",
-			},
-			"context": {
-				Type:        jsonschema.Object,
-				Description: "Sub-agent specific context. This is copied before the sub-agent receives it.",
-			},
-			"max_tool_rounds": {
-				Type:        jsonschema.Number,
-				Description: "Optional per-run ReAct tool round limit.",
-			},
-			"metadata": {
-				Type:        jsonschema.Object,
-				Description: "Optional trace metadata for frontend or audit display.",
-			},
+			Required: []string{"agent_name", "instructions"},
 		},
-		Required: []string{"agent_name", "instructions"},
+		metadata: types.ToolMetadata{Category: types.CategoryExternal},
+		ctxFn:    t.execute,
 	}
+	return t
 }
 
-func (t *RunAgentTool) Execute(ctx context.Context, input []byte) (string, error) {
-	var p RunAgentInput
-	if err := json.Unmarshal(input, &p); err != nil {
-		return "", fmt.Errorf("parse run_agent input: %w", err)
-	}
-	if err := validate.Struct(p); err != nil {
-		return "", formatValidation(err)
-	}
-
+func (t *RunAgentTool) execute(ctx context.Context, p RunAgentInput) (string, error) {
 	contextData := cloneToolMap(t.scope.BaseContext)
 	mergeToolMap(contextData, p.Context)
 	result, err := t.runtime.RunSubAgent(ctx, agents.SubAgentRunRequest{
@@ -139,47 +124,33 @@ type SendAgentMessageInput struct {
 }
 
 type SendAgentMessageTool struct {
+	BaseTool[SendAgentMessageInput]
 	runtime *agents.CollaborationRuntime
 }
 
 func NewSendAgentMessageTool(runtime *agents.CollaborationRuntime) *SendAgentMessageTool {
-	return &SendAgentMessageTool{runtime: runtime}
-}
-
-func (t *SendAgentMessageTool) Name() string {
-	return "send_agent_message"
-}
-
-func (t *SendAgentMessageTool) Description() string {
-	return "Send a message to a collaboration channel so sub-agents can coordinate through explicit shared state."
-}
-
-func (t *SendAgentMessageTool) Metadata() types.ToolMetadata {
-	return types.ToolMetadata{Category: types.CategoryExternal}
-}
-
-func (t *SendAgentMessageTool) Parameters() jsonschema.Definition {
-	return jsonschema.Definition{
-		Type: jsonschema.Object,
-		Properties: map[string]jsonschema.Definition{
-			"channel_id": {Type: jsonschema.String, Description: "Collaboration channel identifier."},
-			"from_agent": {Type: jsonschema.String, Description: "Sender agent name."},
-			"to_agent":   {Type: jsonschema.String, Description: "Optional intended recipient agent name."},
-			"content":    {Type: jsonschema.String, Description: "Message body."},
-			"metadata":   {Type: jsonschema.Object, Description: "Optional structured metadata."},
+	t := &SendAgentMessageTool{runtime: runtime}
+	t.BaseTool = BaseTool[SendAgentMessageInput]{
+		name:        "send_agent_message",
+		description: "Send a message to a collaboration channel so sub-agents can coordinate through explicit shared state.",
+		parameters: jsonschema.Definition{
+			Type: jsonschema.Object,
+			Properties: map[string]jsonschema.Definition{
+				"channel_id": {Type: jsonschema.String, Description: "Collaboration channel identifier."},
+				"from_agent": {Type: jsonschema.String, Description: "Sender agent name."},
+				"to_agent":   {Type: jsonschema.String, Description: "Optional intended recipient agent name."},
+				"content":    {Type: jsonschema.String, Description: "Message body."},
+				"metadata":   {Type: jsonschema.Object, Description: "Optional structured metadata."},
+			},
+			Required: []string{"channel_id", "from_agent", "content"},
 		},
-		Required: []string{"channel_id", "from_agent", "content"},
+		metadata: types.ToolMetadata{Category: types.CategoryExternal},
+		fn:       t.execute,
 	}
+	return t
 }
 
-func (t *SendAgentMessageTool) Execute(_ context.Context, input []byte) (string, error) {
-	var p SendAgentMessageInput
-	if err := json.Unmarshal(input, &p); err != nil {
-		return "", fmt.Errorf("parse send_agent_message input: %w", err)
-	}
-	if err := validate.Struct(p); err != nil {
-		return "", formatValidation(err)
-	}
+func (t *SendAgentMessageTool) execute(p SendAgentMessageInput) (string, error) {
 	msg, err := t.runtime.SendMessage(p.ChannelID, p.FromAgent, p.ToAgent, p.Content, p.Metadata)
 	if err != nil {
 		return "", err
@@ -195,55 +166,37 @@ type ReadAgentMessagesInput struct {
 }
 
 type ReadAgentMessagesTool struct {
+	BaseTool[ReadAgentMessagesInput]
 	runtime *agents.CollaborationRuntime
 }
 
 func NewReadAgentMessagesTool(runtime *agents.CollaborationRuntime) *ReadAgentMessagesTool {
-	return &ReadAgentMessagesTool{runtime: runtime}
-}
-
-func (t *ReadAgentMessagesTool) Name() string {
-	return "read_agent_messages"
-}
-
-func (t *ReadAgentMessagesTool) Description() string {
-	return "Read messages from a collaboration channel, optionally after a message ID or for a specific recipient."
-}
-
-func (t *ReadAgentMessagesTool) Metadata() types.ToolMetadata {
-	return types.ToolMetadata{Category: types.CategoryExternal}
-}
-
-func (t *ReadAgentMessagesTool) Parameters() jsonschema.Definition {
-	return jsonschema.Definition{
-		Type: jsonschema.Object,
-		Properties: map[string]jsonschema.Definition{
-			"channel_id": {Type: jsonschema.String, Description: "Collaboration channel identifier."},
-			"after_id":   {Type: jsonschema.String, Description: "Only return messages after this message ID."},
-			"to_agent":   {Type: jsonschema.String, Description: "Only return broadcast messages and messages addressed to this agent."},
-			"limit":      {Type: jsonschema.Number, Description: "Maximum number of messages to return."},
+	t := &ReadAgentMessagesTool{runtime: runtime}
+	t.BaseTool = BaseTool[ReadAgentMessagesInput]{
+		name:        "read_agent_messages",
+		description: "Read messages from a collaboration channel, optionally after a message ID or for a specific recipient.",
+		parameters: jsonschema.Definition{
+			Type: jsonschema.Object,
+			Properties: map[string]jsonschema.Definition{
+				"channel_id": {Type: jsonschema.String, Description: "Collaboration channel identifier."},
+				"after_id":   {Type: jsonschema.String, Description: "Only return messages after this message ID."},
+				"to_agent":   {Type: jsonschema.String, Description: "Only return broadcast messages and messages addressed to this agent."},
+				"limit":      {Type: jsonschema.Number, Description: "Maximum number of messages to return."},
+			},
+			Required: []string{"channel_id"},
 		},
-		Required: []string{"channel_id"},
+		metadata: types.ToolMetadata{Category: types.CategoryExternal},
+		fn:       t.execute,
 	}
+	return t
 }
 
-func (t *ReadAgentMessagesTool) Execute(_ context.Context, input []byte) (string, error) {
-	var p ReadAgentMessagesInput
-	if err := json.Unmarshal(input, &p); err != nil {
-		return "", fmt.Errorf("parse read_agent_messages input: %w", err)
-	}
-	if err := validate.Struct(p); err != nil {
-		return "", formatValidation(err)
-	}
+func (t *ReadAgentMessagesTool) execute(p ReadAgentMessagesInput) (string, error) {
 	messages, err := t.runtime.ReadMessages(p.ChannelID, p.AfterID, p.ToAgent, p.Limit)
 	if err != nil {
 		return "", err
 	}
 	return marshalToolOutput(map[string]any{"messages": messages})
-}
-
-func formatValidation(err error) error {
-	return fmt.Errorf("invalid tool input: %w", err)
 }
 
 func marshalToolOutput(v any) (string, error) {

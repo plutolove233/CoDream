@@ -18,9 +18,18 @@ type Client struct {
 	registry interfaces.ToolRegistry
 }
 
+type partialToolCall struct {
+	id        string
+	toolType  string
+	name      string
+	arguments strings.Builder
+}
+
 func NewClient(apiKey string, baseURL string, model string, registry interfaces.ToolRegistry) *Client {
 	cfg := openai.DefaultConfig(apiKey)
-	cfg.BaseURL = baseURL
+	if baseURL != "" {
+		cfg.BaseURL = baseURL
+	}
 	return &Client{
 		client:   openai.NewClientWithConfig(cfg),
 		model:    model,
@@ -59,13 +68,6 @@ func (c *Client) receiveCompletionStream(ctx context.Context, stream *openai.Cha
 	defer stream.Close()
 
 	var fullContent strings.Builder
-
-	type partialToolCall struct {
-		id        string
-		toolType  string
-		name      string
-		arguments strings.Builder
-	}
 	var toolCallOrder []int
 	toolCallsByIdx := map[int]*partialToolCall{}
 	var finishReason string
@@ -81,49 +83,8 @@ func (c *Client) receiveCompletionStream(ctx context.Context, stream *openai.Cha
 			return
 		}
 
-		if len(resp.Choices) == 0 {
-			continue
-		}
-
-		delta := resp.Choices[0].Delta
-
-		if fr := string(resp.Choices[0].FinishReason); fr != "" {
-			finishReason = fr
-		}
-
-		if resp.Usage.PromptTokens > 0 || resp.Usage.CompletionTokens > 0 || resp.Usage.TotalTokens > 0 {
-			usage.PromptTokens = int(resp.Usage.PromptTokens)
-			usage.CompletionTokens = int(resp.Usage.CompletionTokens)
-			usage.TotalTokens = int(resp.Usage.TotalTokens)
-		}
-
-		if delta.Content != "" {
-			if !sendCompleteEvent(ctx, events, types.CompleteEvent{Delta: delta.Content}) {
-				return
-			}
-			fullContent.WriteString(delta.Content)
-		}
-
-		for _, tc := range delta.ToolCalls {
-			if tc.Index == nil {
-				continue
-			}
-			idx := *tc.Index
-			if _, exists := toolCallsByIdx[idx]; !exists {
-				toolCallsByIdx[idx] = &partialToolCall{}
-				toolCallOrder = append(toolCallOrder, idx)
-			}
-			p := toolCallsByIdx[idx]
-			if tc.ID != "" {
-				p.id = tc.ID
-			}
-			if tc.Type != "" {
-				p.toolType = string(tc.Type)
-			}
-			if tc.Function.Name != "" {
-				p.name = tc.Function.Name
-			}
-			p.arguments.WriteString(tc.Function.Arguments)
+		if !handleCompletionStreamResponse(ctx, events, resp, &fullContent, &finishReason, usage, &toolCallOrder, toolCallsByIdx) {
+			return
 		}
 	}
 
@@ -151,6 +112,63 @@ func (c *Client) receiveCompletionStream(ctx context.Context, stream *openai.Cha
 		FinishReason: finishReason,
 		Usage:        usageResult,
 	}})
+}
+
+func handleCompletionStreamResponse(
+	ctx context.Context,
+	events chan<- types.CompleteEvent,
+	resp openai.ChatCompletionStreamResponse,
+	fullContent *strings.Builder,
+	finishReason *string,
+	usage *types.TokenUsage,
+	toolCallOrder *[]int,
+	toolCallsByIdx map[int]*partialToolCall,
+) bool {
+	if resp.Usage != nil && (resp.Usage.PromptTokens > 0 || resp.Usage.CompletionTokens > 0 || resp.Usage.TotalTokens > 0) {
+		usage.PromptTokens += resp.Usage.PromptTokens
+		usage.CompletionTokens += resp.Usage.CompletionTokens
+		usage.TotalTokens += resp.Usage.TotalTokens
+	}
+
+	if len(resp.Choices) == 0 {
+		return true
+	}
+
+	delta := resp.Choices[0].Delta
+
+	if fr := string(resp.Choices[0].FinishReason); fr != "" {
+		*finishReason = fr
+	}
+
+	if delta.Content != "" {
+		if !sendCompleteEvent(ctx, events, types.CompleteEvent{Delta: delta.Content}) {
+			return false
+		}
+		fullContent.WriteString(delta.Content)
+	}
+
+	for _, tc := range delta.ToolCalls {
+		if tc.Index == nil {
+			continue
+		}
+		idx := *tc.Index
+		if _, exists := toolCallsByIdx[idx]; !exists {
+			toolCallsByIdx[idx] = &partialToolCall{}
+			*toolCallOrder = append(*toolCallOrder, idx)
+		}
+		p := toolCallsByIdx[idx]
+		if tc.ID != "" {
+			p.id = tc.ID
+		}
+		if tc.Type != "" {
+			p.toolType = string(tc.Type)
+		}
+		if tc.Function.Name != "" {
+			p.name = tc.Function.Name
+		}
+		p.arguments.WriteString(tc.Function.Arguments)
+	}
+	return true
 }
 
 func sendCompleteEvent(ctx context.Context, events chan<- types.CompleteEvent, event types.CompleteEvent) bool {
