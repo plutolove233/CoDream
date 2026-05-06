@@ -45,10 +45,23 @@ type PipelineStage struct {
 	Name        string         `json:"name"`
 	Objective   string         `json:"objective"`
 	AgentType   string         `json:"agent_type"`
+	Agents      []StageAgent   `json:"agents,omitempty"`
 	DependsOn   []string       `json:"depends_on,omitempty"`
 	Checkpoint  string         `json:"checkpoint,omitempty"`
 	Checkpoints []string       `json:"checkpoints,omitempty"`
 	Input       map[string]any `json:"input,omitempty"`
+}
+
+type StageAgent struct {
+	Name           string         `json:"name"`
+	Role           string         `json:"role,omitempty"`
+	AgentType      string         `json:"agent_type"`
+	SystemPrompt   string         `json:"system_prompt,omitempty"`
+	InputContract  map[string]any `json:"input_contract,omitempty"`
+	OutputContract map[string]any `json:"output_contract,omitempty"`
+	ContextPaths   []string       `json:"context_paths,omitempty"`
+	Provider       string         `json:"provider,omitempty"`
+	Model          string         `json:"model,omitempty"`
 }
 
 type StagePlanItem struct {
@@ -81,6 +94,36 @@ func (p DefaultStagePlanner) PlanStage(_ context.Context, req PlanRequest) (Stag
 	if description == "" {
 		description = fmt.Sprintf("execute stage %s", req.Stage.Name)
 	}
+
+	if len(req.Stage.Agents) > 0 {
+		items := make([]StagePlanItem, 0, len(req.Stage.Agents))
+		for i, agent := range req.Stage.Agents {
+			agentType := agent.AgentType
+			if agentType == "" {
+				agentType = req.Stage.AgentType
+			}
+			items = append(items, StagePlanItem{
+				TaskID:      fmt.Sprintf("%s-task-%d", req.Stage.Name, i+1),
+				StageName:   req.Stage.Name,
+				Description: description,
+				AgentType:   agentType,
+				Input: map[string]any{
+					"stage_input":     cloneMap(req.Stage.Input),
+					"agent":           agent,
+					"context_paths":   agent.ContextPaths,
+					"input_contract":  agent.InputContract,
+					"output_contract": agent.OutputContract,
+					"provider":        agent.Provider,
+					"model":           agent.Model,
+				},
+			})
+		}
+		return StagePlan{
+			StageName: req.Stage.Name,
+			Items:     items,
+		}, nil
+	}
+
 	task := StagePlanItem{
 		TaskID:      req.Stage.Name + "-task-1",
 		StageName:   req.Stage.Name,
@@ -330,8 +373,13 @@ func validatePipeline(def PipelineDefinition) error {
 		if stage.Name == "" {
 			return ErrStageNameRequired
 		}
-		if stage.AgentType == "" {
+		if stage.AgentType == "" && len(stage.Agents) == 0 {
 			return ErrStageAgentTypeRequired
+		}
+		for _, agent := range stage.Agents {
+			if agent.AgentType == "" && stage.AgentType == "" {
+				return ErrStageAgentTypeRequired
+			}
 		}
 		if knownStages[stage.Name] {
 			return fmt.Errorf("%w: %s", ErrStageNameDuplicated, stage.Name)

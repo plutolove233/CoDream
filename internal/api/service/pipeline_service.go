@@ -8,6 +8,7 @@ type ApprovalStatus = agents.ApprovalStatus
 type AgentDefinition = agents.AgentDefinition
 type PipelineDefinition = agents.PipelineDefinition
 type PipelineStage = agents.PipelineStage
+type StageAgent = agents.StageAgent
 type StagePlanItem = agents.StagePlanItem
 type StagePlan = agents.StagePlan
 type PlanRequest = agents.PlanRequest

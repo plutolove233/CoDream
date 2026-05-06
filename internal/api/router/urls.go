@@ -14,6 +14,7 @@ func InitRouter(engine *gin.Engine) {
 		base.GET("/version", handler.GetVersion)
 		v1.RegisterUserRouters(base)
 		v1.RegisterLLMRouters(base)
+		v1.RegisterPipelineRouters(base)
 	}
 	// ws基本路由
 	{
